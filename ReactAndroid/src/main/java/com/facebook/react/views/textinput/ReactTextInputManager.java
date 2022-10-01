@@ -26,6 +26,9 @@ import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
@@ -585,12 +588,58 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
   @ReactProp(name = "contextMenuHidden", defaultBoolean = false)
   public void setContextMenuHidden(ReactEditText view, boolean contextMenuHidden) {
     final boolean _contextMenuHidden = contextMenuHidden;
-    view.setOnLongClickListener(
+
+    // Disable every mode to disable copy
+    if(_contextMenuHidden){ 
+
+      view.setOnLongClickListener(
         new View.OnLongClickListener() {
           public boolean onLongClick(View v) {
-            return _contextMenuHidden;
+            return false;
           };
         });
+
+    view.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+       // view.setSelection(0);
+      }
+    });
+
+      ActionMode.Callback callback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+          return false;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+          if (menu != null) {
+            menu.removeItem(android.R.id.paste);
+            menu.removeItem(android.R.id.copy);
+            menu.removeItem(android.R.id.selectAll);
+            menu.removeItem(android.R.id.autofill);
+          }
+          return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+          return false;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+
+        }
+      };
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        view.setCustomInsertionActionModeCallback(callback);
+      }
+      view.setCustomSelectionActionModeCallback(callback);
+    }
+
   }
 
   @ReactProp(name = "selectTextOnFocus", defaultBoolean = false)
